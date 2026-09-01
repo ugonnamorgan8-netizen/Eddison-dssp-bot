@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: eddison-dssp-bot
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DSSP_USERNAME
+        sync: false
+      - key: DSSP_PASSWORD
+        sync: false
+      - key: DASHBOARD_USERNAME
+        sync: false
+      - key: DASHBOARD_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEFAULT_INSTRUCTOR_ID
+        value: "21598"
