@@ -1,0 +1,40 @@
+# ─── Credentials & secrets ─────────────────────────────────────
+.env
+
+# ─── Student data (PII — never commit real data) ───────────────
+students.csv
+
+# ─── Runtime / operational files ───────────────────────────────
+logs/
+screenshots/
+scheduler_state.json
+
+# ─── Python cache ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Virtual environments ──────────────────────────────────────
+venv/
+env/
+.venv/
+.env.local
+
+# ─── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE / editor ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Playwright browser binaries ───────────────────────────────
+playwright-browsers/

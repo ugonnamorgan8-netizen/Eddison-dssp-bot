@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>DSSP Automation Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+
+  <!-- ── BACKGROUND ORBS ── -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="app">
+
+    <!-- ── HEADER ── -->
+    <header class="header glass">
+      <div class="header-left">
+        <div class="logo">
+          <span class="logo-icon">⚡</span>
+          <div>
+            <h1 class="logo-title">DSSP Automation</h1>
+            <p class="logo-sub">Training Management System</p>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="clock-block">
+          <span class="clock" id="clock">--:--:--</span>
+          <span class="date" id="date">---</span>
+        </div>
+        <div class="status-pill" id="status-pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label" id="pill-label">Idle</span>
+        </div>
+      </div>
+      <!-- Logout -->
+      <form method="POST" action="/logout" class="logout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button
+          type="submit"
+          title="Logout"
+          class="logout-btn"
+          onmouseover="this.style.background='rgba(239,68,68,0.18)';this.style.color='#fca5a5'"
+          onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='rgba(255,255,255,0.55)'"
+        >Logout</button>
+      </form>
+    </header>
+
+    <!-- ── MAIN GRID ── -->
+    <main class="main-grid">
+
+      <!-- ── CONTROLS CARD ── -->
+      <section class="card glass controls-card">
+        <h2 class="card-title">Controls</h2>
+
+        <button class="btn btn-primary" id="btn-run" onclick="runNow()">
+          <span class="btn-icon">▶</span>
+          <span class="btn-text">Run Now</span>
+          <span class="spinner hidden" id="run-spinner"></span>
+        </button>
+
+        <button class="btn btn-schedule" id="btn-schedule" onclick="openScheduleModal()">
+          <span class="btn-icon">🕗</span>
+          <span class="btn-text">Set Schedule</span>
+        </button>
+
+        <button class="btn btn-cancel" id="btn-cancel" onclick="cancelSchedule()">
+          <span class="btn-icon">✕</span>
+          <span class="btn-text">Cancel Schedule</span>
+        </button>
+
+        <button class="btn btn-logs" onclick="toggleLogHistory()">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">View Log History</span>
+        </button>
+      </section>
+
+      <!-- ── SCHEDULE CARD ── -->
+      <section class="card glass schedule-card" id="schedule-card">
+        <h2 class="card-title">Schedule</h2>
+        <div class="schedule-empty" id="schedule-empty">
+          <span class="schedule-icon">🕗</span>
+          <p>No schedule set</p>
+          <small>Click "Set Schedule" to create a daily auto-run</small>
+        </div>
+        <div class="schedule-info hidden" id="schedule-info">
+          <div class="schedule-row">
+            <span class="sched-label">Daily at</span>
+            <span class="sched-value" id="sched-time">--:--</span>
+          </div>
+          <div class="schedule-row">
+            <span class="sched-label">Next run</span>
+            <span class="sched-value" id="sched-next">—</span>
+          </div>
+          <div class="schedule-row">
+            <span class="sched-label">Internet check</span>
+            <span class="sched-value net-ok" id="sched-net">Checking...</span>
+          </div>
+          <p class="sched-note">If offline at scheduled time, runs automatically once connected.</p>
+        </div>
+      </section>
+
+      <!-- ── STATS CARD ── -->
+      <section class="card glass stats-card">
+        <h2 class="card-title">Last Run Results</h2>
+        <div class="stats-grid">
+          <div class="stat-item stat-updated">
+            <span class="stat-num" id="stat-updated">—</span>
+            <span class="stat-lbl">Updated</span>
+          </div>
+          <div class="stat-item stat-skipped">
+            <span class="stat-num" id="stat-skipped">—</span>
+            <span class="stat-lbl">Skipped</span>
+          </div>
+          <div class="stat-item stat-failed">
+            <span class="stat-num" id="stat-failed">—</span>
+            <span class="stat-lbl">Failed</span>
+          </div>
+        </div>
+        <p class="last-run-time" id="last-run-time">No runs yet today</p>
+      </section>
+
+      <!-- ── LOG CONSOLE ── -->
+      <section class="card glass console-card">
+        <div class="console-header">
+          <h2 class="card-title">Live Log</h2>
+          <div class="console-actions">
+            <button class="icon-btn" onclick="clearConsole()" title="Clear">✕</button>
+            <button class="icon-btn" onclick="scrollBottom()" title="Scroll to bottom">↓</button>
+          </div>
+        </div>
+        <div class="console" id="console">
+          <span class="console-placeholder">Waiting for output...</span>
+        </div>
+      </section>
+
+      <!-- ── LOG HISTORY PANEL ── -->
+      <section class="card glass log-history-card hidden" id="log-history-card">
+        <h2 class="card-title">Log History</h2>
+        <div class="log-list" id="log-list">Loading...</div>
+        <div class="log-viewer hidden" id="log-viewer">
+          <div class="log-viewer-header">
+            <span id="log-viewer-title">—</span>
+            <button class="icon-btn" onclick="closeLogViewer()">✕</button>
+          </div>
+          <pre class="log-viewer-content" id="log-viewer-content"></pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ── SCHEDULE MODAL ── -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="closeScheduleModal()">
+    <div class="modal glass" onclick="event.stopPropagation()">
+      <h3 class="modal-title">Set Daily Schedule</h3>
+      <p class="modal-sub">The updater will run automatically at this time every day.</p>
+      <div class="modal-input-row">
+        <label for="time-input">Run time</label>
+        <input type="time" id="time-input" value="08:00"/>
+      </div>
+      <p class="modal-note">💡 If your laptop has no internet at that time, the system will wait and run automatically once a connection is detected.</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="saveSchedule()">Save Schedule</button>
+        <button class="btn btn-cancel" onclick="closeScheduleModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
